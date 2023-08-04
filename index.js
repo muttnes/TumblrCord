@@ -1,4 +1,5 @@
 //Se utilizan const ya que son variables que no cambiarán (Lógica de discord.js también)
+const express = require('express');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
@@ -6,6 +7,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const app = express();
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
@@ -35,6 +37,12 @@ client.once(Events.ClientReady, c => {
     console.log(`Listo! Sesión iniciada como ${c.user.tag}`);
 });
 
+app.get('/', (req, res) => {
+    res.send('HOLA TOY USANDO EXPRESS')
+})
+
+app.listen(3000)
+console.log(`Server on port ${3000}`)
 client.login(process.env.BOT_TOKEN);
 
 client.on(Events.InteractionCreate, async interaction => {
