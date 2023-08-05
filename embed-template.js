@@ -27,9 +27,8 @@ const embedColors = [
     return embedColors[randomIndex]
   }
 
-  const randomEmbedColor = getRandomColor();
-
   function createRandomTagEmbed(title, description, img) {
+    const randomEmbedColor = getRandomColor();
     const randomTagEmbed = new EmbedBuilder()
       .setColor(randomEmbedColor)
       .setTitle(title)
