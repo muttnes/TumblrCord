@@ -1,66 +1,36 @@
-const tumblr = require('tumblr.js');
+const axios = require('axios');
 const { SlashCommandBuilder } = require('discord.js');
 const dotenv = require('dotenv');
 const { createRandomTagEmbed } = require('../../embed-template');
 
 dotenv.config();
 
-const tumblrClient = tumblr.createClient({
-  consumer_key: process.env.TUMBLR_CONSUMER_KEY,
-  token_key: process.env.TUMBLR_TOKEN_KEY
-});
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('random-tag')
+    .setDescription('Obtiene una publicación aleatoria de un tag de Tumblr.')
+    .addStringOption(option => option.setName('tag').setDescription('Tag a buscar en Tumblr').setRequired(true)),
+  async execute(interaction) {
+    const tag = interaction.options.getString('tag');
+    const url = `http://localhost:${process.env.PORT}/api/get-post/${tag}`;
 
-async function getTaggedPosts(tag, limit = 20) {
-  return new Promise((resolve, reject) => {
-    tumblrClient.taggedPosts(tag, { limit }, (err, data) => {
-      if (err) {
-        console.error(err);
-        reject('Ocurrió un error al buscar el tag. Por favor, inténtalo de nuevo.');
+    try {
+      const response = await axios.get(url);
+      const post = response.data;
+      const randomIndex = Math.floor(Math.random() * post.length);
+      const selectedPost = post[randomIndex];
+
+      const tagEmbed = createRandomTagEmbed(`Post para el tag ${tag}`, selectedPost.content, selectedPost.media_url)
+      
+
+      if (post.error) {
+        await interaction.reply(post.error);
       } else {
-        const filteredPosts = data.filter(post => post.type === 'photo' && post.tags && post.tags.includes(tag));
-        const sortedPosts = filteredPosts.sort((a, b) => (b.note_count || 0) - (a.note_count || 0));
-        resolve(sortedPosts);
+        await interaction.reply({ embeds: [tagEmbed]})
       }
-    });
-  });
-}
-           
-const seedRandom = (seed) => {
-    var x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
-  
-  module.exports = {
-    data: new SlashCommandBuilder()
-      .setName('random-tag')
-      .setDescription('Obtiene una publicación aleatoria de un tag de Tumblr.')
-      .addStringOption(option => option.setName('tag').setDescription('Tag a buscar en Tumblr').setRequired(true)),
-    async execute(interaction) {
-      const tag = interaction.options.getString('tag');
-  
-      try {
-        const sortedPosts = await getTaggedPosts(tag);
-        if (sortedPosts.length === 0) {
-          interaction.reply('No se encontraron publicaciones para el tag especificado.');
-          return;
-        }
-  
-        const currentTime = new Date().getTime();
-        const randomSeed = currentTime + Math.random();
-        const randomGenerator = seedRandom(randomSeed);
-  
-        const randomIndex = Math.floor(randomGenerator * sortedPosts.length);
-        const selected_post = sortedPosts[randomIndex];
-        console.log(selected_post);
-  
-        const image_url = selected_post.photos[0].original_size.url; // Obtiene la URL de la imagen
-  
-        const tagEmbed = createRandomTagEmbed('hola', selected_post.summary || 'No se encontró descripción', image_url);
-  
-        interaction.reply({ embeds: [tagEmbed] });
-      } catch (error) {
-        interaction.reply(error);
-      }
+    } catch (error) {
+      console.error(error);
+      await interaction.reply('Error al obtener el post de la base de datos');
     }
-  };
-  
+  }
+}

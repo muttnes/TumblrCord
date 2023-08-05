@@ -1,13 +1,22 @@
 //Se utilizan const ya que son variables que no cambiarán (Lógica de discord.js también)
 const express = require('express');
+const app = express();
+const discordRoutes = require('./routes/routes');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const dotenv = require('dotenv');
+const { error } = require('node:console');
 
 dotenv.config();
 
-const app = express();
+const PORT = process.env.PORT;
+
+app.use('/api', discordRoutes);
+app.listen(PORT, () => {
+    console.log(`Servidor express funcionando en el puerto ${PORT}`)
+})
+
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
@@ -35,15 +44,19 @@ for (const folder of commandFolders) {
 
 client.once(Events.ClientReady, c => {
     console.log(`Listo! Sesión iniciada como ${c.user.tag}`);
+
+    const request = require('request')
+
+    const URL = 'http://localhost:3000/bot-is-ready'
+
+    request.get(URL, (error, response, body) => {
+        if (error) {
+            console.error('Error al enviar solicitud a Express: ', error)
+        } else {
+            console.log('Solicitud enviada a Express: ', body)
+        }
+    });
 });
-
-app.get('/', (req, res) => {
-    res.send('HOLA TOY USANDO EXPRESS')
-})
-
-app.listen(3000)
-console.log(`Server on port ${3000}`)
-client.login(process.env.BOT_TOKEN);
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
@@ -67,3 +80,5 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+module.exports = PORT;
+client.login(process.env.BOT_TOKEN)
