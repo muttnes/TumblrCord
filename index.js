@@ -2,6 +2,7 @@
 const express = require('express');
 const app = express();
 const discordRoutes = require('./routes/routes');
+const tumblrController = require('./controllers/tumblrController');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
@@ -13,6 +14,7 @@ dotenv.config();
 const PORT = process.env.PORT;
 
 app.use('/api', discordRoutes);
+app.use('/api/tumblr/posts/:tag', tumblrController.getTumblrPostsByTag);
 app.listen(PORT, () => {
     console.log(`Servidor express funcionando en el puerto ${PORT}`)
 })
