@@ -1,8 +1,8 @@
 //Se utilizan const ya que son variables que no cambiarán (Lógica de discord.js también)
 const express = require('express');
 const app = express();
-const discordRoutes = require('./routes/routes');
-const tumblrController = require('./controllers/tumblrController');
+const discordRoutes = require('./routes/discord.routes');
+const tumblrRoutes = require('./routes/tumblr.routes');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
@@ -14,7 +14,7 @@ dotenv.config();
 const PORT = process.env.PORT;
 
 app.use('/api', discordRoutes);
-app.use('/api/tumblr/posts/:tag', tumblrController.getTumblrPostsByTag);
+app.use('/api', tumblrRoutes);
 app.listen(PORT, () => {
     console.log(`Servidor express funcionando en el puerto ${PORT}`)
 })
@@ -46,18 +46,6 @@ for (const folder of commandFolders) {
 
 client.once(Events.ClientReady, c => {
     console.log(`Listo! Sesión iniciada como ${c.user.tag}`);
-
-    const request = require('request')
-
-    const URL = 'http://localhost:3000/bot-is-ready'
-
-    request.get(URL, (error, response, body) => {
-        if (error) {
-            console.error('Error al enviar solicitud a Express: ', error)
-        } else {
-            console.log('Solicitud enviada a Express: ', body)
-        }
-    });
 });
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -82,5 +70,5 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
-module.exports = PORT;
 client.login(process.env.BOT_TOKEN)
+module.exports = PORT;
