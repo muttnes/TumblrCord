@@ -14,12 +14,13 @@ async function getTumblrPostsByTag(req, res) {
     const tag = req.params.tag;
     const options = {
         before: '2023-08-01',
-        after: '2023-01-01'
+        after: '2022-01-01'
     };
+    const postType = taggedPosts.postType('photo');
 
     try {
         const data = await new Promise((resolve, reject) => {
-            client.taggedPosts(tag, options, (err, data) => {
+            client.taggedPosts(tag, options, postType, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {

@@ -33,3 +33,11 @@ async function getPostByTag(req, res) {
 module.exports = {
   getPostByTag,
 };
+
+async function saveTumblrPosts(req, res) {
+  try {
+    const retrievedPosts = await db.manyOrNone(
+      `INSERT INTO`
+    )
+  } catch(error) {}
+}
