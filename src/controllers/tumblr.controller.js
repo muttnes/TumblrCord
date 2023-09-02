@@ -13,14 +13,13 @@ const client = tumblr.createClient({
 async function getTumblrPostsByTag(req, res) {
     const tag = req.params.tag;
     const options = {
-        before: '2023-08-01',
+        before: '2023-09-01',
         after: '2022-01-01'
     };
-    const postType = taggedPosts.postType('photo');
 
     try {
         const data = await new Promise((resolve, reject) => {
-            client.taggedPosts(tag, options, postType, (err, data) => {
+            client.taggedPosts(tag, options, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -29,7 +28,10 @@ async function getTumblrPostsByTag(req, res) {
             });
         });
 
-        res.json(data);
+        // Filtrado para recibir posts que contengan fotos
+        const filteredPosts = data.filter(post => post.type === 'photo');
+
+        res.json(filteredPosts);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al obtener los posts de tumblr' });
